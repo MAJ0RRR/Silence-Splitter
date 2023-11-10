@@ -1,8 +1,8 @@
 import os
-import glob
 import pydub
 import pathlib
 from typing import List
+
 
 class FileSpliter:
 	def __init__(self, source: str, destination: str):
@@ -10,14 +10,13 @@ class FileSpliter:
 		self.destination = destination
 		
 	def split_silence(self, silence_threshs: List[int], min_silence_lens: List[int], min_audio_len: int = 2500, max_audio_len: int = 15000):
-		audiofiles_src = glob.glob(self.source)
 		
-		for audiofile in audiofiles_src:
+		for audiofile in os.listdir(self.source):
 			stem = pathlib.Path(audiofile).stem
 			len_saved = 0
 			print(f'Spliting: {stem}')
 			chunk_num_out = 0
-			signal = pydub.AudioSegment.from_file(audiofile, format='wav')
+			signal = pydub.AudioSegment.from_file(os.path.join(self.source,audiofile), format='mp3')
 			chunks = [signal]
 			for silence_thresh, min_silence_len in zip(silence_threshs, min_silence_lens):
 				chunks_new_iter = []
@@ -30,7 +29,8 @@ class FileSpliter:
 							chunks_new_iter.append(new_chunk)
 						else:
 							len_saved += len(new_chunk)
-							new_chunk.export(os.path.join(self.destination, f'{stem}-CHUNK-{chunk_num_out}.wav'), format='wav')
+							new_chunk.export(os.path.join(self.destination, f'{stem}-CHUNK-{chunk_num_out}.mp3'), format='mp3')
+
 							chunk_num_out = chunk_num_out + 1
 				chunks = chunks_new_iter
 			print(f'{(len_saved/len(signal) * 100):.2f}% is used')
