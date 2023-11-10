@@ -1,6 +1,10 @@
 # Skrypt usuwający ciszę w nagraniach
 ## Projekt na Usługi i Aplikacje Multimedialne 2023
 
+### Branches
+
+- `master` : CLI script.
+- `web-app` : Script adjusted to be hosted on Flask server.
 
 ### Setup 
 
@@ -34,3 +38,13 @@ There are also CLI arguments you can pass to script: <br>
     - `-l` Lengths of silence in miliseconds on which splitting happens. Default: [300]. <br>
     - `-s` Source folder (input) <br>
     - `-d` Destination folder (output)
+
+
+### WebApp
+
+Start Flask server.
+```
+python app.py
+```
+Upload .mp3 file and wait couple of seconds.
+Download processed file as `joined.mp3`.
