@@ -3,7 +3,7 @@
 
 ### Branches
 
-- `master` : CLI script.
+- `cli-script` : CLI script.
 - `web-app` : Script adjusted to be hosted on Flask server.
 
 ### Setup 
