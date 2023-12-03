@@ -6,6 +6,12 @@ COPY requirements.txt .
 
 RUN pip install -r requirements.txt
 
+RUN apt-get -y update
+
+RUN apt-get -y upgrade
+
+RUN apt-get install -y ffmpeg make autoconf automake libtool sox espeak-ng libavcodec-extra
+
 COPY . .
 
 EXPOSE 5000
