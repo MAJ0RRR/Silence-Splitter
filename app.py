@@ -3,10 +3,10 @@ from natsort import natsorted
 from file_splitter import FileSpliter
 import os
 import pydub
-import tempfile
 from flask import Flask
 from flask import *
 from file_splitter import *
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -39,11 +39,25 @@ def upload_file():
         filename = secure_filename(file.filename)
         file_path = os.path.join(app.config['INPUT_FOLDER'], filename)
         file.save(file_path)
+        
+        timestamp = datetime.now()
 
         split_silence(app.config['OUTPUT_FOLDER'],app.config['INPUT_FOLDER'],[-45],[300])
-        join_audio(app.config['OUTPUT_FOLDER'],app.config['RESULT_FOLDER'])
+        join_audio(app.config['OUTPUT_FOLDER'],app.config['RESULT_FOLDER'],timestamp)
+        
+        remove_files_from_folder(app.config['INPUT_FOLDER'])
+        remove_files_from_folder(app.config['OUTPUT_FOLDER'])
+        
+        try:
+            file_path = os.path.join(app.config['RESULT_FOLDER'], f"joined_{timestamp}.mp3")
 
-        return render_template('result.html', filename="joined.mp3")
+            if os.path.exists(file_path):
+                return send_file(file_path, as_attachment=True)
+            else:
+                abort(404, "File not found")
+
+        except Exception as e:
+            return f"Error: {str(e)}"
 
     return 'Invalid file format.'
 
@@ -51,7 +65,7 @@ def upload_file():
 def download_file(filename):
     return send_file(os.path.join(app.config['RESULT_FOLDER'], filename), as_attachment=True)
 
-def join_audio(input, output):
+def join_audio(input, output,timestamp):
     slices = [f for f in os.listdir(input) if f.endswith('.mp3')]
     slices = natsorted(slices)
     audio_segments = []  
@@ -65,12 +79,23 @@ def join_audio(input, output):
     for s in audio_segments:
         joined_audio = joined_audio + s
 
-    joined_audio.export(os.path.join(output,"joined.mp3"), format="mp3")
+    joined_audio.export(os.path.join(output,f"joined_{timestamp}.mp3"), format="mp3")
     
     
 def split_silence(destination, source, silence_threshs, min_silence_lens):
     fileSpliter = FileSpliter(source,destination)
     fileSpliter.split_silence(silence_threshs, min_silence_lens)
+
+def remove_files_from_folder(folder_path):
+    for filename in os.listdir(folder_path):
+        file_path = os.path.join(folder_path, filename)
+        try:
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.unlink(file_path)
+            elif os.path.isdir(file_path):
+                os.rmdir(file_path)
+        except Exception as e:
+            print(f"Failed to delete {file_path}. Error: {e}")
 
 
 if __name__ == '__main__':
