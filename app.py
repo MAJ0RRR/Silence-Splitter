@@ -21,10 +21,6 @@ app.config['RESULT_FOLDER'] = RESULT_FOLDER
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@app.route('/')
-def index():
-    return render_template('index.html')
-
 @app.route('/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files:
@@ -60,10 +56,6 @@ def upload_file():
             return f"Error: {str(e)}"
 
     return 'Invalid file format.'
-
-@app.route('/download/<filename>')
-def download_file(filename):
-    return send_file(os.path.join(app.config['RESULT_FOLDER'], filename), as_attachment=True)
 
 def join_audio(input, output,timestamp):
     slices = [f for f in os.listdir(input) if f.endswith('.mp3')]
